@@ -1,78 +1,107 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * UseCase2RoomInitialization
+ * UseCase3InventorySetup
  *
- * This class demonstrates basic room initialization using abstraction,
- * inheritance, and static availability variables.
+ * This class demonstrates centralized room inventory management
+ * using a HashMap as a single source of truth.
  *
- * It creates different room types and displays their details.
+ * It initializes room types and displays their availability.
  *
  * @author Harshini
- * @version 2.1
+ * @version 3.1
  */
+
+// Abstract Room class (Domain Model)
 abstract class Room {
 
-    // Common attributes
     protected int beds;
     protected int size;
     protected double pricePerNight;
 
-    // Constructor
     public Room(int beds, int size, double pricePerNight) {
         this.beds = beds;
         this.size = size;
         this.pricePerNight = pricePerNight;
     }
 
-    // Abstract method
     public abstract String getRoomType();
 
-    // Common method to display room details
     public void displayDetails(int availability) {
         System.out.println(getRoomType() + ":");
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sqft");
         System.out.println("Price per night: " + pricePerNight);
-        System.out.println("Available: " + availability);
+        System.out.println("Available Rooms: " + availability);
         System.out.println();
     }
 }
 
-// Single Room
+// Concrete Room Types
 class SingleRoom extends Room {
-
     public SingleRoom() {
         super(1, 250, 1500.0);
     }
 
-    @Override
     public String getRoomType() {
         return "Single Room";
     }
 }
 
-// Double Room
 class DoubleRoom extends Room {
-
     public DoubleRoom() {
         super(2, 400, 2500.0);
     }
 
-    @Override
     public String getRoomType() {
         return "Double Room";
     }
 }
 
-// Suite Room
 class SuiteRoom extends Room {
-
     public SuiteRoom() {
         super(3, 750, 5000.0);
     }
 
-    @Override
     public String getRoomType() {
         return "Suite Room";
+    }
+}
+
+// Inventory Management Class
+class RoomInventory {
+
+    private Map<String, Integer> availabilityMap;
+
+    // Constructor initializes inventory
+    public RoomInventory() {
+        availabilityMap = new HashMap<>();
+
+        availabilityMap.put("Single Room", 5);
+        availabilityMap.put("Double Room", 3);
+        availabilityMap.put("Suite Room", 2);
+    }
+
+    // Get availability
+    public int getAvailability(String roomType) {
+        return availabilityMap.getOrDefault(roomType, 0);
+    }
+
+    // Update availability
+    public void updateAvailability(String roomType, int newCount) {
+        availabilityMap.put(roomType, newCount);
+    }
+
+    // Display full inventory
+    public void displayInventory(Map<String, Room> roomMap) {
+        System.out.println("Hotel Room Inventory Status\n");
+
+        for (String type : roomMap.keySet()) {
+            Room room = roomMap.get(type);
+            int available = getAvailability(type);
+            room.displayDetails(available);
+        }
     }
 }
 
@@ -81,21 +110,16 @@ public class BookMyStay {
 
     public static void main(String[] args) {
 
-        System.out.println("Hotel Room Initialization\n");
+        // Create room objects
+        Map<String, Room> roomMap = new HashMap<>();
+        roomMap.put("Single Room", new SingleRoom());
+        roomMap.put("Double Room", new DoubleRoom());
+        roomMap.put("Suite Room", new SuiteRoom());
 
-        // Static availability variables
-        int singleAvailability = 5;
-        int doubleAvailability = 3;
-        int suiteAvailability = 2;
+        // Initialize inventory
+        RoomInventory inventory = new RoomInventory();
 
-        // Polymorphism: using Room reference
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
-
-        // Display details
-        single.displayDetails(singleAvailability);
-        doubleRoom.displayDetails(doubleAvailability);
-        suite.displayDetails(suiteAvailability);
+        // Display inventory
+        inventory.displayInventory(roomMap);
     }
 }
