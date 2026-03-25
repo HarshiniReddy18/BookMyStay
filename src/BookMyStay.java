@@ -2,18 +2,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * UseCase3InventorySetup
+ * UseCase4RoomSearch
  *
- * This class demonstrates centralized room inventory management
- * using a HashMap as a single source of truth.
- *
- * It initializes room types and displays their availability.
+ * Demonstrates read-only room search functionality.
+ * Only available rooms are displayed without modifying inventory state.
  *
  * @author Harshini
- * @version 3.1
+ * @version 4.0
  */
 
-// Abstract Room class (Domain Model)
+// Abstract Room (Domain Model)
 abstract class Room {
 
     protected int beds;
@@ -33,7 +31,7 @@ abstract class Room {
         System.out.println("Beds: " + beds);
         System.out.println("Size: " + size + " sqft");
         System.out.println("Price per night: " + pricePerNight);
-        System.out.println("Available Rooms: " + availability);
+        System.out.println("Available: " + availability);
         System.out.println();
     }
 }
@@ -69,38 +67,39 @@ class SuiteRoom extends Room {
     }
 }
 
-// Inventory Management Class
+// Inventory (Read-only usage here)
 class RoomInventory {
 
     private Map<String, Integer> availabilityMap;
 
-    // Constructor initializes inventory
     public RoomInventory() {
         availabilityMap = new HashMap<>();
-
         availabilityMap.put("Single Room", 5);
         availabilityMap.put("Double Room", 3);
         availabilityMap.put("Suite Room", 2);
     }
 
-    // Get availability
     public int getAvailability(String roomType) {
         return availabilityMap.getOrDefault(roomType, 0);
     }
+}
 
-    // Update availability
-    public void updateAvailability(String roomType, int newCount) {
-        availabilityMap.put(roomType, newCount);
-    }
+// Search Service (Read-only logic)
+class RoomSearchService {
 
-    // Display full inventory
-    public void displayInventory(Map<String, Room> roomMap) {
-        System.out.println("Hotel Room Inventory Status\n");
+    public void searchAvailableRooms(Map<String, Room> roomMap, RoomInventory inventory) {
+
+        System.out.println("Room Search\n");
 
         for (String type : roomMap.keySet()) {
-            Room room = roomMap.get(type);
-            int available = getAvailability(type);
-            room.displayDetails(available);
+
+            int available = inventory.getAvailability(type);
+
+            // Defensive programming: show only available rooms
+            if (available > 0) {
+                Room room = roomMap.get(type);
+                room.displayDetails(available);
+            }
         }
     }
 }
@@ -110,7 +109,7 @@ public class BookMyStay {
 
     public static void main(String[] args) {
 
-        // Create room objects
+        // Initialize room objects
         Map<String, Room> roomMap = new HashMap<>();
         roomMap.put("Single Room", new SingleRoom());
         roomMap.put("Double Room", new DoubleRoom());
@@ -119,7 +118,10 @@ public class BookMyStay {
         // Initialize inventory
         RoomInventory inventory = new RoomInventory();
 
-        // Display inventory
-        inventory.displayInventory(roomMap);
+        // Search service
+        RoomSearchService searchService = new RoomSearchService();
+
+        // Perform search (read-only)
+        searchService.searchAvailableRooms(roomMap, inventory);
     }
 }
